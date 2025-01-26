@@ -5,4 +5,5 @@ export default [
   route("/medical-details", "routes/medical-details.tsx"),
   route("/second-opinion", "routes/second-opinion.tsx"),
   route("/clear-details", "routes/clear-details.tsx"),
+  route("/delete-detail", "routes/delete-detail.tsx"),
 ] satisfies RouteConfig;

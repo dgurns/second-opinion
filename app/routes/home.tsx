@@ -27,11 +27,19 @@ export default function Home() {
   const detailsFetcher = useFetcher();
   const secondOpinionFetcher = useFetcher();
   const clearFetcher = useFetcher();
+  const deleteFetcher = useFetcher();
   const formRef = useRef<HTMLFormElement>(null);
   const [streamedResponse, setStreamedResponse] = useState("");
   const isSubmittingDetails = detailsFetcher.state === "submitting";
   const isGettingOpinion = secondOpinionFetcher.state === "submitting";
   const isClearing = clearFetcher.state === "submitting";
+
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+    if ((e.metaKey || e.ctrlKey) && e.key === "Enter") {
+      e.preventDefault();
+      formRef.current?.requestSubmit();
+    }
+  };
 
   // Reset form after successful submission
   useEffect(() => {
@@ -87,34 +95,51 @@ export default function Home() {
   }, [secondOpinionFetcher.state]);
 
   return (
-    <main className="container mx-auto p-4">
+    <main className="container mx-auto p-4 mb-24">
       {details.length > 0 && (
-        <>
-          <div className="mb-8 space-y-4">
-            <h2 className="text-lg font-semibold">Previous Medical Details</h2>
+        <details className="mb-8">
+          <summary className="text-lg font-semibold cursor-pointer hover:text-gray-300 mb-4">
+            Previous Medical Details ({details.length})
+          </summary>
+          <div className="space-y-4">
             <div className="space-y-3">
               {details.map((detail) => (
                 <div key={detail.id} className="rounded-lg">
-                  <div className="text-sm text-gray-500 mb-1">
-                    {new Date(detail.created_at).toLocaleString()}
+                  <div className="flex items-center mb-1">
+                    <div className="text-sm text-gray-500">
+                      {new Date(detail.created_at).toLocaleString()}
+                    </div>
+                    <deleteFetcher.Form
+                      method="post"
+                      action="/delete-detail"
+                      className="inline"
+                    >
+                      <input type="hidden" name="id" value={detail.id} />
+                      <button
+                        type="submit"
+                        className="text-red-500 hover:text-red-700 underline text-sm ml-2"
+                      >
+                        Delete
+                      </button>
+                    </deleteFetcher.Form>
                   </div>
                   <div className="whitespace-pre-wrap">{detail.details}</div>
                 </div>
               ))}
             </div>
+            <div className="flex justify-between items-center">
+              <clearFetcher.Form method="post" action="/clear-details">
+                <button
+                  type="submit"
+                  disabled={isClearing}
+                  className="bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600 disabled:opacity-50"
+                >
+                  {isClearing ? "Clearing..." : "Clear All"}
+                </button>
+              </clearFetcher.Form>
+            </div>
           </div>
-          <div className="flex justify-between items-center mb-4">
-            <clearFetcher.Form method="post" action="/clear-details">
-              <button
-                type="submit"
-                disabled={isClearing}
-                className="bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600 disabled:opacity-50"
-              >
-                {isClearing ? "Clearing..." : "Clear All"}
-              </button>
-            </clearFetcher.Form>
-          </div>
-        </>
+        </details>
       )}
 
       <detailsFetcher.Form
@@ -131,8 +156,9 @@ export default function Home() {
             id="details"
             name="details"
             required
+            onKeyDown={handleKeyDown}
             className="w-full h-32 px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-            placeholder="Enter your medical details or question here..."
+            placeholder="Enter your medical details or questions here... (Press Cmd+Enter to submit)"
           />
         </div>
         <button
