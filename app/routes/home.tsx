@@ -1,18 +1,24 @@
 import type { Route } from "./+types/home";
 import { useFetcher, useLoaderData } from "react-router";
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { db } from "~/db";
 import { medicalDetailsTable } from "~/db/schema";
 
 export async function loader() {
-  const details = await db.select().from(medicalDetailsTable).orderBy(medicalDetailsTable.created_at);
+  const details = await db
+    .select()
+    .from(medicalDetailsTable)
+    .orderBy(medicalDetailsTable.created_at);
   return { details };
 }
 
 export function meta({}: Route.MetaArgs) {
   return [
     { title: "Second Opinion" },
-    { name: "description", content: "Get a second opinion on your medical details" },
+    {
+      name: "description",
+      content: "Get a second opinion on your medical details",
+    },
   ];
 }
 
@@ -22,6 +28,7 @@ export default function Home() {
   const secondOpinionFetcher = useFetcher();
   const clearFetcher = useFetcher();
   const formRef = useRef<HTMLFormElement>(null);
+  const [streamedResponse, setStreamedResponse] = useState("");
   const isSubmittingDetails = detailsFetcher.state === "submitting";
   const isGettingOpinion = secondOpinionFetcher.state === "submitting";
   const isClearing = clearFetcher.state === "submitting";
@@ -33,53 +40,99 @@ export default function Home() {
     }
   }, [detailsFetcher.data]);
 
+  // Handle streaming response
+  useEffect(() => {
+    let abortController: AbortController | null = null;
+
+    if (secondOpinionFetcher.state === "submitting") {
+      setStreamedResponse("");
+      const fetchStream = async () => {
+        try {
+          abortController = new AbortController();
+          const response = await fetch("/second-opinion", {
+            method: "POST",
+            signal: abortController.signal,
+          });
+
+          if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+          }
+
+          const reader = response.body?.getReader();
+          if (!reader) return;
+
+          const decoder = new TextDecoder();
+          while (true) {
+            const { done, value } = await reader.read();
+            if (done) break;
+            const text = decoder.decode(value, { stream: true });
+            setStreamedResponse((prev) => prev + text);
+          }
+        } catch (error: unknown) {
+          if (error instanceof Error && error.name === "AbortError") {
+            console.log("Fetch aborted");
+          } else {
+            console.error("Error reading stream:", error);
+          }
+        }
+      };
+      fetchStream();
+    }
+
+    return () => {
+      if (abortController) {
+        abortController.abort();
+      }
+    };
+  }, [secondOpinionFetcher.state]);
+
   return (
     <main className="container mx-auto p-4">
-      <div className="flex justify-between items-center mb-4">
-        <h1 className="text-2xl font-bold">Submit Medical Details</h1>
-        <clearFetcher.Form method="post" action="/clear-details">
-          <button
-            type="submit"
-            disabled={isClearing}
-            className="bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600 disabled:opacity-50"
-          >
-            {isClearing ? "Clearing..." : "Clear All"}
-          </button>
-        </clearFetcher.Form>
-      </div>
-
       {details.length > 0 && (
-        <div className="mb-8 space-y-4">
-          <h2 className="text-lg font-semibold">Previous Medical Details</h2>
-          <div className="space-y-3">
-            {details.map((detail, index) => (
-              <div key={detail.id} className="p-3 bg-gray-50 rounded-lg">
-                <div className="text-sm text-gray-500 mb-1">
-                  {new Date(detail.created_at).toLocaleString()}
+        <>
+          <div className="mb-8 space-y-4">
+            <h2 className="text-lg font-semibold">Previous Medical Details</h2>
+            <div className="space-y-3">
+              {details.map((detail) => (
+                <div key={detail.id} className="rounded-lg">
+                  <div className="text-sm text-gray-500 mb-1">
+                    {new Date(detail.created_at).toLocaleString()}
+                  </div>
+                  <div className="whitespace-pre-wrap">{detail.details}</div>
                 </div>
-                <div className="whitespace-pre-wrap">{detail.details}</div>
-              </div>
-            ))}
+              ))}
+            </div>
           </div>
-        </div>
+          <div className="flex justify-between items-center mb-4">
+            <clearFetcher.Form method="post" action="/clear-details">
+              <button
+                type="submit"
+                disabled={isClearing}
+                className="bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600 disabled:opacity-50"
+              >
+                {isClearing ? "Clearing..." : "Clear All"}
+              </button>
+            </clearFetcher.Form>
+          </div>
+        </>
       )}
 
-      <detailsFetcher.Form 
+      <detailsFetcher.Form
         ref={formRef}
-        method="post" 
-        action="/medical-details" 
+        method="post"
+        action="/medical-details"
         className="space-y-4"
       >
         <div>
           <label htmlFor="details" className="block text-sm font-medium mb-2">
-            Medical Details
+            Medical Details or Questions
           </label>
           <textarea
             id="details"
             name="details"
             required
             className="w-full h-32 px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-            placeholder="Enter your medical details here..."
+            placeholder="Enter your medical details or question here..."
           />
         </div>
         <button
@@ -102,10 +155,10 @@ export default function Home() {
           </button>
         </secondOpinionFetcher.Form>
 
-        {secondOpinionFetcher.data?.diagnosis && (
-          <div className="mt-4 rounded-lg">
+        {streamedResponse && (
+          <div className="my-4 rounded-lg shadow">
             <h2 className="text-xl font-semibold mb-2">AI Second Opinion</h2>
-            <div className="whitespace-pre-wrap">{secondOpinionFetcher.data.diagnosis}</div>
+            <div className="whitespace-pre-wrap">{streamedResponse}</div>
           </div>
         )}
       </div>
