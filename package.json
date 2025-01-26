@@ -16,6 +16,7 @@
     "dotenv": "^16.4.7",
     "drizzle-orm": "^0.38.4",
     "isbot": "^5.1.17",
+    "openai": "^4.80.1",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
     "react-router": "^7.1.3"
