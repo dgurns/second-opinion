@@ -2,19 +2,26 @@
 
 Get a medical second opinion without ANY data leaving your device.
 
+Uses Ollama, SQLite, and React Router.
+
 <img width="100%" alt="Image" src="https://github.com/user-attachments/assets/24cd2fa0-0a03-4f04-a591-7d242a7b98a1" />
 
 ## Local Development Setup
 
-1. Start the Ollama server:
+1. Pull the local Ollama model and start the Ollama server:
 
 ```bash
+ollama pull gemma3:4b
+
 ollama serve
+# Or run the desktop app to serve automatically
 ```
 
-2. In a separate terminal, start the development server:
+2. In a separate terminal, install app dependencies and start the development server:
 
 ```bash
+pnpm install
+
 pnpm dev
 ```
 
