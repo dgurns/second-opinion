@@ -19,7 +19,6 @@ export const action = async ({ request }: ActionFunctionArgs) => {
     async start(controller) {
       const completion = await openai.chat.completions.create({
         model: "deepseek-r1:7b",
-        // model: "llama3.2:1b",
         stream: true,
         messages: [
           {
