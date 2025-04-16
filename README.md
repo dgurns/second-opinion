@@ -1,6 +1,6 @@
 # Second Opinion
 
-A medical assistant that provides second opinions on medical details using local LLMs.
+Get a medical second opinion without ANY data leaving your device.
 
 ## Local Development Setup
 
@@ -26,8 +26,12 @@ The application will be available at http://localhost:5173
 
 ## Models
 
-The application uses the `deepseek-r1:7b` model by default. Make sure you have it pulled in Ollama:
+The application uses the `gemma3:4b` model by default, which offers a good combination of speed and intelligence. You might also try `deepseek-r1:7b` which is a reasoning model and a bit smarter. Or try whatever model you'd like from https://ollama.com/library!
+
+To change your model, run `cp .env.sample .env` and update the `OLLAMA_MODEL` value.
+
+Make sure you have each model pulled locally with Ollama:
 
 ```bash
-ollama pull deepseek-r1:7b
+ollama pull gemma3:4b
 ```

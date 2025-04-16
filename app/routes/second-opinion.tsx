@@ -18,7 +18,7 @@ export const action = async ({ request }: ActionFunctionArgs) => {
   const stream = new ReadableStream({
     async start(controller) {
       const completion = await openai.chat.completions.create({
-        model: "deepseek-r1:7b",
+        model: process.env.OLLAMA_MODEL ?? "gemma3:4b",
         stream: true,
         messages: [
           {
