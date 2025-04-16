@@ -2,6 +2,8 @@
 
 Get a medical second opinion without ANY data leaving your device.
 
+<img width="100%" alt="Image" src="https://github.com/user-attachments/assets/24cd2fa0-0a03-4f04-a591-7d242a7b98a1" />
+
 ## Local Development Setup
 
 1. Start the Ollama server:
