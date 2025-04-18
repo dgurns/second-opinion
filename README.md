@@ -8,20 +8,36 @@ Uses Ollama, SQLite, and React Router.
 
 ## Local Development Setup
 
-1. Pull the local Ollama model and start the Ollama server:
+1. Copy the `.env.sample` file to `.env`:
 
 ```bash
-ollama pull gemma3:4b
+cp .env.sample .env
 
-ollama serve
-# Or run the desktop app to serve automatically
+# Optional: Customize values if you want
 ```
 
-2. In a separate terminal, install app dependencies and start the development server:
+2. Download the local LLM and serve it via Ollama:
 
 ```bash
+# Pull the model of your choice
+ollama pull gemma3:4b
+
+# Serve the model
+ollama serve
+
+# Or run the Ollama desktop app to serve automatically
+```
+
+3. In a separate terminal, install dependencies, initialize the database, and start the development server:
+
+```bash
+# Install dependencies
 pnpm install
 
+# Initialize the local database
+pnpm db:push
+
+# Start the development server
 pnpm dev
 ```
 
