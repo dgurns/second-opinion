@@ -11,7 +11,9 @@ const openai = new OpenAI({
 export const action = async ({ request }: ActionFunctionArgs) => {
   // Fetch all medical details
   const allDetails = await db.select().from(medicalDetailsTable);
-  const combinedDetails = allDetails.map((d) => d.details).join("\n\n");
+  const combinedDetails = allDetails
+    .map((d) => `<medical_detail>${d.details}</medical_detail>`)
+    .join("\n");
 
   // Create a ReadableStream that will receive the tokens
   const encoder = new TextEncoder();
@@ -26,23 +28,28 @@ export const action = async ({ request }: ActionFunctionArgs) => {
             content: `
                 You are the world's most knowledgeable and insightful doctor. 
                 Based on the provided medical details, provide a possible diagnosis and recommendations.
-                Do not use markdown formatting in your response.
+                Do **not** use Markdown formatting in your response.
             `,
           },
           {
             role: "user",
-            content: `Please analyze these medical details and provide a brief diagnosis:\n\n${combinedDetails}`,
+            content: `Please analyze these medical details and provide a brief diagnosis: <medical_details>\n${combinedDetails}\n</medical_details>`,
           },
         ],
       });
 
       try {
         for await (const chunk of completion) {
-          const content = chunk.choices[0]?.delta?.content;
-          if (content) {
-            // Encode the text content into Uint8Array before enqueueing
-            controller.enqueue(encoder.encode(content));
+          if (
+            !chunk.choices ||
+            chunk.choices.length < 1 ||
+            !chunk.choices[0].delta?.content
+          ) {
+            continue;
           }
+          const { content } = chunk.choices[0].delta;
+          // Encode the text content into Uint8Array before enqueueing
+          controller.enqueue(encoder.encode(content));
         }
         controller.close();
       } catch (error) {
