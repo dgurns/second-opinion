@@ -21,6 +21,7 @@ export const action = async ({ request }: ActionFunctionArgs) => {
     async start(controller) {
       const completion = await openai.chat.completions.create({
         model: process.env.OLLAMA_MODEL ?? "gemma3:4b",
+        max_completion_tokens: 2000,
         stream: true,
         messages: [
           {
@@ -33,7 +34,7 @@ export const action = async ({ request }: ActionFunctionArgs) => {
           },
           {
             role: "user",
-            content: `Please analyze these medical details and provide a brief diagnosis: <medical_details>\n${combinedDetails}\n</medical_details>`,
+            content: `Please analyze these medical details and provide a diagnosis of 1-3 paragraphs: <medical_details>\n${combinedDetails}\n</medical_details>`,
           },
         ],
       });

@@ -60,3 +60,9 @@ Make sure you have each model pulled locally with Ollama:
 ```bash
 ollama pull gemma3:4b
 ```
+
+## Troubleshooting
+
+If you notice that the LLM completion is getting cut off, it might be because the context window is too large for your laptop's memory and/or Ollama's default configuration.
+
+This is a fundamental limitation that I'm not sure how to overcome at the moment. As LLMs get more efficient and laptops get more powerful, this should become less of an issue over time.
