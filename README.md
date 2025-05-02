@@ -19,13 +19,14 @@ cp .env.sample .env
 2. Download the local LLM and serve it via Ollama:
 
 ```bash
+# start ollama so you can pull the model
+# Or run the Ollama desktop app to serve automatically
+ollama serve
+
 # Pull the model of your choice
 ollama pull gemma3:4b
 
-# Serve the model
-ollama serve
 
-# Or run the Ollama desktop app to serve automatically
 ```
 
 3. In a separate terminal, install dependencies, initialize the database, and start the development server:
