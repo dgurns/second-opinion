@@ -6,4 +6,5 @@ export default [
   route("/second-opinion", "routes/second-opinion.tsx"),
   route("/clear-details", "routes/clear-details.tsx"),
   route("/delete-detail", "routes/delete-detail.tsx"),
+  route("/__vite_ping", "routes/noop.tsx")
 ] satisfies RouteConfig;
