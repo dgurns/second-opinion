@@ -19,26 +19,25 @@ cp .env.sample .env
 2. Download the local LLM and serve it via Ollama:
 
 ```bash
-# Pull the model of your choice
-ollama pull gemma3:4b
-
-# Serve the model
+# Start Ollama locally via the desktop app,
+# or via CLI like so:
 ollama serve
 
-# Or run the Ollama desktop app to serve automatically
+# Pull the model of your choice
+ollama pull gemma3:4b
 ```
 
 3. In a separate terminal, install dependencies, initialize the database, and start the development server:
 
 ```bash
 # Install dependencies
-pnpm install
+npm install
 
 # Initialize the local database
-pnpm db:push
+npm run db:push
 
 # Start the development server
-pnpm dev
+npm run dev
 ```
 
 The application will be available at http://localhost:5173
@@ -46,8 +45,7 @@ The application will be available at http://localhost:5173
 ## Prerequisites
 
 - [Ollama](https://ollama.ai/) installed locally
-- [pnpm](https://pnpm.io/) for package management
-- Node.js 18+ installed
+- Node.js 20+ installed which includes npm for package management
 
 ## Models
 
